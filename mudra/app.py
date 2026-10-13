@@ -1,4 +1,6 @@
+import json
 import subprocess
+import sys
 import threading
 import time
 
@@ -14,6 +16,42 @@ def beep(name):
     subprocess.Popen(["afplay", f"/System/Library/Sounds/{name}.aiff"])
 
 
+class VoiceProcess:
+    """Runs speech recognition in a separate process so a native-library crash can't take gestures down."""
+
+    def __init__(self, on_command, status):
+        self.status = status
+        self.on_command = on_command
+        self.proc = subprocess.Popen([sys.executable, "-m", "mudra.voice_worker"],
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
+        threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        for line in self.proc.stdout:
+            try:
+                msg = json.loads(line)
+            except ValueError:
+                continue
+            if msg["k"] == "status":
+                self.status["text"] = msg["t"]
+            elif msg["k"] == "command":
+                try:
+                    self.on_command(msg["t"])
+                except Exception as e:
+                    self.status["text"] = f"error: {e}"
+        self.status["text"] = "voice process stopped (gestures still work)"
+
+    def listen(self):
+        try:
+            self.proc.stdin.write("listen\n")
+            self.proc.stdin.flush()
+        except Exception:
+            pass
+
+    def close(self):
+        self.proc.terminate()
+
+
 def run(cfg, preview=True, voice=True, camera=None):
     import cv2
     import mediapipe as mp
@@ -23,48 +61,23 @@ def run(cfg, preview=True, voice=True, camera=None):
     ctl = Controller()
     phrases = build_phrases(cfg["voice_commands"], api.voice_handlers)
     status = {"text": "ready"}
-    busy = threading.Lock()
-    listener = None
-    if voice and cfg["voice"]["enabled"]:
-        from .voice import Listener
-        listener = Listener(cfg["voice"])
+
+    def on_command(text):
+        action = match_voice(text, phrases)
+        if action is None:
+            beep("Basso")
+            status["text"] = f'no match: "{text}"'
+        else:
+            beep("Glass")
+            status["text"] = f'heard: "{text}"'
+            action() if callable(action) else run_action(action, ctl)
+
+    vp = VoiceProcess(on_command, status) if voice and cfg["voice"]["enabled"] else None
 
     def listen():
-        if listener is None or not busy.acquire(blocking=False):
-            return
-
-        def work():
-            try:
-                beep("Pop")
-                status["text"] = "listening..."
-                text = listener.listen_once()
-                action = match_voice(text, phrases)
-                if action is None:
-                    beep("Basso")
-                    status["text"] = f'no match: "{text}"'
-                else:
-                    beep("Glass")
-                    status["text"] = f'heard: "{text}"'
-                    action() if callable(action) else run_action(action, ctl)
-            except Exception as e:
-                status["text"] = f"voice error: {e}"
-            finally:
-                busy.release()
-
-        threading.Thread(target=work, daemon=True).start()
-
-    if listener is not None and cfg["voice"].get("always_on", False):
-        def on_wake(text):
-            action = match_voice(text, phrases)
-            if action is None:
-                beep("Basso")
-                status["text"] = f'no match: "{text}"'
-            else:
-                beep("Glass")
-                status["text"] = f'heard: "{text}"'
-                action() if callable(action) else run_action(action, ctl)
-
-        threading.Thread(target=listener.wake_loop, args=(on_wake, status), daemon=True).start()
+        if vp:
+            beep("Pop")
+            vp.listen()
 
     cam = cfg["camera"]
     cap = cv2.VideoCapture(cam["index"] if camera is None else camera)
@@ -106,5 +119,7 @@ def run(cfg, preview=True, voice=True, camera=None):
         pass
     finally:
         ctl.release()
+        if vp:
+            vp.close()
         cap.release()
         cv2.destroyAllWindows()

@@ -1,0 +1,49 @@
+# Mudra default config. Copy to ~/.mudra/mudra.toml (run `mudra init`) and edit.
+
+[camera]
+index = 0
+width = 640
+height = 480
+
+[tracking]
+anchor = 5             # landmark that drives the cursor (5 = index knuckle, stable while pinching)
+frame_margin = 0.18    # ignore the outer edge of the camera frame; smaller = bigger hand travel
+smoothing = 0.35       # 0..1, higher = snappier, lower = smoother
+scroll_speed = 60      # scroll lines per full frame of hand travel
+swipe_distance = 0.30  # fraction of frame width a palm must travel to count as a swipe
+swipe_window = 0.45    # seconds
+swipe_cooldown = 1.0   # seconds between swipes
+pinch_on = 0.30        # thumb-index distance (in hand sizes) to start a pinch
+pinch_off = 0.45       # distance to release (hysteresis stops flicker)
+stable_frames = 3      # frames a gesture must hold before it counts
+shaka_hold = 0.6       # seconds to hold the shaka sign to start listening
+
+[voice]
+enabled = true
+always_on = true       # listen all the time; say "<wake_word> <command>" (shaka still works)
+wake_word = "jarvis"   # one word Whisper recognises well; change to anything
+mic_threshold = 0.015  # raise if it triggers on noise, lower if it ignores your voice
+model = "base.en"      # tiny.en = fastest, small.en = most accurate
+record_seconds = 4
+
+# Gesture -> action. Actions: key:, app:, url:, shell:, say:, scroll:
+[gestures]
+swipe_left = "key:ctrl+left"
+swipe_right = "key:ctrl+right"
+
+# Spoken phrase -> action. "open <app name>" and "search <query>" work out of the box.
+[voice_commands]
+"screenshot" = "key:cmd+shift+3"
+"switch app" = "key:cmd+tab"
+"close window" = "key:cmd+w"
+"new tab" = "key:cmd+t"
+"close tab" = "key:cmd+w"
+"lock screen" = "key:ctrl+cmd+q"
+"scroll down" = "scroll:-15"
+"scroll up" = "scroll:15"
+"mute" = "shell:osascript -e 'set volume output muted true'"
+"unmute" = "shell:osascript -e 'set volume output muted false'"
+"volume up" = "shell:osascript -e 'set volume output volume ((output volume of (get volume settings)) + 12)'"
+"volume down" = "shell:osascript -e 'set volume output volume ((output volume of (get volume settings)) - 12)'"
+"open vs code" = "app:Visual Studio Code"
+"open chrome" = "app:Google Chrome"

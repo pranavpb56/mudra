@@ -47,11 +47,26 @@ Desktop swipe uses `Win+Ctrl+Left/Right`. Edit your config with `notepad %USERPR
 | ✌️ Peace sign, move hand up/down | Scroll |
 | 🖐️ Open palm, swipe left/right | Switch desktop (configurable) |
 | 🤙 Shaka, hold 0.6s | Listen for a voice command |
+| 🤟 Three fingers (index, middle, ring), move up/down | Volume knob |
 | ✊ Fist | Pause (safe resting pose) |
 
 ## Voice
 
 Runs fully offline with Whisper. Built-ins: `open <any app>`, `search <anything>`, `screenshot`, `scroll down`, `volume up`, `mute`, `new tab`, `lock screen` … and you add your own in config.
+
+## More than gestures
+
+**Voice typing.** Say `Computer, type hello world` to type into any app. Or say `Computer, start dictation` and just talk: everything you say is typed where your cursor is, until you say `stop dictation`.
+
+**Modes.** Gestures can change meaning per situation:
+
+- `Computer, presentation mode`: palm swipe sends the left/right arrow keys, so you can run slides from across the room
+- `Computer, media mode`: palm swipe changes to the previous/next track
+- `Computer, normal mode`: back to the defaults
+
+Define your own under `[modes.<name>.gestures]` in the config, then add a voice command like `"movie mode" = "mode:movie"`.
+
+**Volume knob.** Hold three fingers up (index, middle, ring) and move your hand up or down.
 
 ## Configure
 
@@ -113,6 +128,6 @@ MIT
 
 Mudra can listen all the time. Say the wake word, then your command:
 
-> **"Jarvis, open notes"** · **"Jarvis, search hyderabad weather"** · **"Jarvis, volume down"**
+> **"Computer, open notes"** · **"Computer, search hyderabad weather"** · **"Computer, volume down"**
 
 Change `wake_word`, `always_on` and `mic_threshold` in `~/.mudra/mudra.toml`. Everything runs offline on your Mac, and audio never leaves your machine. The shaka 🤙 gesture still works as push-to-talk.

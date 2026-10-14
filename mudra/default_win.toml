@@ -6,6 +6,7 @@ width = 640
 height = 480
 
 [tracking]
+volume_speed = 100  # volume change per full frame of hand travel
 anchor = 5
 frame_margin = 0.18
 smoothing = 0.35
@@ -21,8 +22,8 @@ shaka_hold = 0.6
 [voice]
 enabled = true
 always_on = true       # listen all the time; say "<wake_word> <command>" (shaka still works)
-wake_word = "jarvis"   # one word Whisper recognises well; change to anything
-mic_threshold = 0.015  # raise if it triggers on noise, lower if it ignores your voice
+wake_word = "computer"   # one word Whisper recognises well; change to anything
+mic_floor = 0.004      # lowest volume that counts as speech (it adapts upward to room noise)
 model = "base.en"      # tiny.en = fastest, small.en = most accurate
 record_seconds = 4
 
@@ -33,6 +34,9 @@ swipe_right = "key:ctrl+win+right"
 
 # Spoken phrase -> action. "open <app name>" and "search <query>" work out of the box.
 [voice_commands]
+"presentation mode" = "mode:presentation"
+"media mode" = "mode:media"
+"normal mode" = "mode:normal"
 "screenshot" = "key:win+shift+s"
 "switch app" = "key:alt+tab"
 "close window" = "key:alt+f4"
@@ -73,3 +77,12 @@ swipe_right = "key:ctrl+win+right"
 "open github" = "url:https://github.com"
 "open gmail" = "url:https://mail.google.com"
 "say hello" = "say:Hello. Mudra is ready."
+
+# Modes: say "presentation mode" / "media mode" / "normal mode". Add your own the same way.
+[modes.presentation.gestures]
+swipe_left = "key:left"
+swipe_right = "key:right"
+
+[modes.media.gestures]
+swipe_left = "key:prevtrack"
+swipe_right = "key:nexttrack"

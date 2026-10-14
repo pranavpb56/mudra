@@ -6,6 +6,7 @@ width = 640
 height = 480
 
 [tracking]
+volume_speed = 120  # volume change per full frame of hand travel
 anchor = 5             # landmark that drives the cursor (5 = index knuckle, stable while pinching)
 frame_margin = 0.18    # ignore the outer edge of the camera frame; smaller = bigger hand travel
 smoothing = 0.35       # 0..1, higher = snappier, lower = smoother
@@ -21,8 +22,8 @@ shaka_hold = 0.6       # seconds to hold the shaka sign to start listening
 [voice]
 enabled = true
 always_on = true       # listen all the time; say "<wake_word> <command>" (shaka still works)
-wake_word = "jarvis"   # one word Whisper recognises well; change to anything
-mic_threshold = 0.015  # raise if it triggers on noise, lower if it ignores your voice
+wake_word = "computer"   # one word Whisper recognises well; change to anything
+mic_floor = 0.004      # lowest volume that counts as speech (it adapts upward to room noise)
 model = "base.en"      # tiny.en = fastest, small.en = most accurate
 record_seconds = 4
 
@@ -33,6 +34,9 @@ swipe_right = "key:ctrl+right"
 
 # Spoken phrase -> action. "open <app name>" and "search <query>" work out of the box.
 [voice_commands]
+"presentation mode" = "mode:presentation"
+"media mode" = "mode:media"
+"normal mode" = "mode:normal"
 "screenshot" = "key:cmd+shift+3"
 "switch app" = "key:cmd+tab"
 "close window" = "key:cmd+w"
@@ -47,3 +51,12 @@ swipe_right = "key:ctrl+right"
 "volume down" = "shell:osascript -e 'set volume output volume ((output volume of (get volume settings)) - 12)'"
 "open vs code" = "app:Visual Studio Code"
 "open chrome" = "app:Google Chrome"
+
+# Modes: say "presentation mode" / "media mode" / "normal mode". Add your own the same way.
+[modes.presentation.gestures]
+swipe_left = "key:left"
+swipe_right = "key:right"
+
+[modes.media.gestures]
+swipe_left = "key:prevtrack"
+swipe_right = "key:nexttrack"

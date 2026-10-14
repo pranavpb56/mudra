@@ -1,7 +1,6 @@
 """Offline speech-to-text via faster-whisper: push-to-talk (shaka) or always-on wake word."""
 import difflib
 import re
-import subprocess
 import threading
 import time
 
@@ -16,7 +15,7 @@ def strip_wake(text, wake_word):
     """If text starts with the wake word (fuzzy, within the first 3 words) return the rest, else None."""
     words, w = _norm(text).split(), _norm(wake_word)
     for i in range(min(3, len(words))):
-        if difflib.SequenceMatcher(None, words[i], w).ratio() >= 0.75:
+        if difflib.SequenceMatcher(None, words[i], w).ratio() >= 0.62:
             return " ".join(words[i + 1:])
     return None
 
@@ -26,6 +25,7 @@ class Listener:
         self.cfg = cfg
         self.model = None
         self.error = None
+        self.dictating = False
         self._ready = threading.Event()
         threading.Thread(target=self._load, daemon=True).start()
 
@@ -62,36 +62,45 @@ class Listener:
         return self._transcribe(audio)
 
     def wake_loop(self, on_command, status):
-        """Always listening. Say '<wake_word> <command>', e.g. 'jarvis open notes'."""
+        """Always listening. Say '<wake_word> <command>', e.g. 'computer open notes'.
+        The speech threshold adapts to your room noise, so it works on quiet and noisy mics."""
         import numpy as np
         import sounddevice as sd
 
         self._ready.wait()
         if self.error:
             return
-        wake = self.cfg.get("wake_word", "jarvis")
-        thresh = float(self.cfg.get("mic_threshold", 0.015))
+        wake = self.cfg.get("wake_word", "computer")
+        floor = float(self.cfg.get("mic_floor", 0.004))  # lowest level that can count as speech
         sr, block = 16000, 1600  # 100 ms blocks
-        buf, quiet = [], 0
+        buf, quiet, ambient = [], 0, None
         awaiting_until = ignore_until = 0.0
         status["text"] = f'say "{wake} <command>"'
         with sd.InputStream(samplerate=sr, channels=1, dtype="float32", blocksize=block) as stream:
             while True:
                 data, _ = stream.read(block)
+                rms = float(np.sqrt(np.mean(data ** 2)))
                 if time.time() < ignore_until:
                     buf, quiet = [], 0
                     continue
-                if float(np.sqrt(np.mean(data ** 2))) > thresh:
+                if ambient is None:
+                    ambient = rms
+                if rms > max(floor, ambient * 3.0):
+                    if not buf:
+                        status["text"] = "hearing you..."
                     buf.append(data.copy())
                     quiet = 0
                 elif buf:
                     buf.append(data.copy())
                     quiet += 1
+                else:
+                    ambient = 0.97 * ambient + 0.03 * rms  # track room noise while idle
                 if not buf or (quiet < 8 and len(buf) < 80):
                     continue
                 audio = np.concatenate(buf).flatten()
                 buf, quiet = [], 0
                 if len(audio) < sr * 0.4:
+                    status["text"] = f'say "{wake} <command>"'
                     continue  # a click or cough, not speech
                 try:
                     text = self._transcribe(audio, prompt=wake)
@@ -99,12 +108,16 @@ class Listener:
                     status["text"] = f"voice error: {e}"
                     continue
                 if not text:
+                    status["text"] = f'say "{wake} <command>"'
                     continue
                 cmd = strip_wake(text, wake)
-                if time.time() < awaiting_until:  # last utterance was just the wake word
+                if self.dictating:  # no wake word needed while dictating
+                    cmd = text if cmd is None else cmd
+                elif time.time() < awaiting_until:  # last utterance was just the wake word
                     cmd = text if cmd is None else cmd
                     awaiting_until = 0.0
                 elif cmd is None:
+                    status["text"] = f'heard "{text}" - start with "{wake}"'
                     continue
                 elif not cmd.strip():
                     awaiting_until = time.time() + 6

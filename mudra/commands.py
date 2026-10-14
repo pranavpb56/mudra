@@ -32,6 +32,9 @@ def match_voice(text: str, phrases: dict, cutoff: float = 0.78):
     close = difflib.get_close_matches(t, list(phrases), n=1, cutoff=cutoff)
     if close:
         return phrases[close[0]]
+    m = re.match(r"\s*(?:type|write)\b[\s,:-]*(.+)", text, re.I | re.S)
+    if m:
+        return "type:" + m.group(1).strip()
     m = re.match(r"(?:open|launch|start) (.+)", t)
     if m:
         return f"app:{m.group(1).title()}"
@@ -85,6 +88,8 @@ def run_action(spec: str, ctl) -> None:
         subprocess.Popen(arg, shell=True)  # config is the user's own file
     elif kind == "say":
         say(arg)
+    elif kind == "type":
+        ctl.type_text(arg + " ")
     elif kind == "scroll":
         ctl.scroll(int(arg))
     else:
@@ -127,6 +132,9 @@ class _Keys:
         self.kb.release(k)
         for m in reversed(mods):
             self.kb.release(m)
+
+    def type_text(self, text):
+        self.kb.type(text)
 
 
 class _Mac(_Keys):
@@ -173,6 +181,10 @@ class _Mac(_Keys):
         e = Q.CGEventCreateScrollWheelEvent(None, Q.kCGScrollEventUnitLine, 1, int(n))
         Q.CGEventPost(Q.kCGHIDEventTap, e)
 
+    def volume_step(self, n):
+        script = f"set volume output volume ((output volume of (get volume settings)) + {int(n)})"
+        subprocess.Popen(["osascript", "-e", script])
+
 
 class _Win(_Keys):
     """Windows mouse + keyboard via pynput (SendInput). Experimental."""
@@ -207,6 +219,10 @@ class _Win(_Keys):
 
     def scroll(self, n):
         self.m.scroll(0, int(n))
+
+    def volume_step(self, n):
+        for _ in range(max(1, abs(int(n)) // 2)):  # one media-key press is about 2%
+            self.key("volumeup" if n > 0 else "volumedown")
 
 
 def Controller():

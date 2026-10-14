@@ -9,7 +9,7 @@ from .commands import Controller, beep, build_phrases, match_voice, run_action
 from .engine import Engine
 from .plugins import API, load_plugins
 
-HELP = "point=move  OK-sign=click/drag  peace=scroll  palm swipe=desktop  shaka=voice  fist=pause"
+HELP = "point=move  OK-sign=click/drag  peace=scroll  palm swipe=desktop  three=volume  shaka=voice  fist=pause"
 
 
 class VoiceProcess:
@@ -66,7 +66,13 @@ def run(cfg, preview=True, voice=True, camera=None):
         else:
             beep("Glass")
             status["text"] = f'heard: "{text}"'
-            action() if callable(action) else run_action(action, ctl)
+            if callable(action):
+                action()
+            elif action.startswith("mode:"):
+                ok = engine.set_mode(action[5:].strip())
+                status["text"] = f"mode: {engine.mode}" if ok else f'unknown mode "{action[5:]}"'
+            else:
+                run_action(action, ctl)
 
     vp = VoiceProcess(on_command, status) if voice and cfg["voice"]["enabled"] else None
 
@@ -107,7 +113,7 @@ def run(cfg, preview=True, voice=True, camera=None):
                 if hl:
                     draw.draw_landmarks(frame, hl, conns)
                 cv2.rectangle(frame, (int(m * w), int(m * h)), (int((1 - m) * w), int((1 - m) * h)), (80, 80, 80), 1)
-                cv2.putText(frame, f"{gesture}  |  {status['text']}", (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                cv2.putText(frame, f"[{engine.mode}] {gesture}  |  {status['text']}", (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                 cv2.putText(frame, HELP, (10, h - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
                 cv2.imshow("Mudra", frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):

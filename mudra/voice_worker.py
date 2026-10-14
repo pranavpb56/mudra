@@ -23,10 +23,10 @@ class Status(dict):
             emit("status", value)
 
 
-def _once(listener):
+def _once(listener, handle):
     try:
         emit("status", "listening...")
-        emit("command", listener.listen_once())
+        handle(listener.listen_once())
     except Exception as e:
         emit("status", f"voice error: {e}")
 
@@ -37,12 +37,27 @@ def main():
 
     cfg = config.load()["voice"]
     listener = Listener(cfg)
+
+    def handle(cmd):
+        c = " ".join(cmd.lower().replace(".", "").replace(",", "").split())
+        if c in ("start dictation", "dictation on", "start typing", "start dictating"):
+            listener.dictating = True
+            emit("status", "dictation ON - say 'stop dictation' to end")
+            return
+        if listener.dictating:
+            if c in ("stop dictation", "dictation off", "stop typing", "stop dictating"):
+                listener.dictating = False
+                emit("status", "dictation OFF")
+                return
+            emit("command", "type " + cmd)
+            return
+        emit("command", cmd)
+
     if cfg.get("always_on", False):
-        threading.Thread(target=listener.wake_loop, args=(lambda t: emit("command", t), Status()),
-                         daemon=True).start()
+        threading.Thread(target=listener.wake_loop, args=(handle, Status()), daemon=True).start()
     for line in sys.stdin:  # parent asks for push-to-talk by writing "listen"
         if line.strip() == "listen":
-            threading.Thread(target=_once, args=(listener,), daemon=True).start()
+            threading.Thread(target=_once, args=(listener, handle), daemon=True).start()
 
 
 if __name__ == "__main__":

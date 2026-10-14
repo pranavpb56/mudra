@@ -35,6 +35,8 @@ def classify(lm, was_pinched=False, pinch_on=0.30, pinch_off=0.45):
         return "point"
     if pattern == (True, True, False, False):
         return "peace"
+    if pattern == (True, True, True, False):
+        return "three"
     if pattern == (False, False, False, True) and up["thumb"]:
         return "shaka"
     return "other"

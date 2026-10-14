@@ -7,7 +7,11 @@ from .gestures import classify
 
 class Engine:
     def __init__(self, cfg, ctl, api, on_listen=None, screen=(1440, 900)):
-        self.t, self.gest = cfg["tracking"], cfg["gestures"]
+        self.cfg = cfg
+        self.t = cfg["tracking"]
+        self.base_gest = cfg["gestures"]
+        self.gest = dict(self.base_gest)
+        self.mode = "normal"
         self.ctl, self.api, self.on_listen, self.screen = ctl, api, on_listen, screen
         self.cur = "none"
         self.cand, self.n = "none", 0
@@ -17,7 +21,20 @@ class Engine:
         self.hist = deque()
         self.last_swipe = 0.0
         self.last_voice = 0.0
+        self.last_vol = 0.0
         self.shaka_t = None
+
+    def set_mode(self, name):
+        """Switch gesture profile: 'normal' or any [modes.<name>] section in the config."""
+        modes = self.cfg.get("modes", {})
+        if name == "normal":
+            self.gest = dict(self.base_gest)
+        elif name in modes:
+            self.gest = {**self.base_gest, **modes[name].get("gestures", {})}
+        else:
+            return False
+        self.mode = name
+        return True
 
     def _run(self, spec):
         if spec:
@@ -71,6 +88,16 @@ class Engine:
                 if n:
                     self.ctl.scroll(n)
                     self.acc -= n
+            self.prev_y = y
+        elif cur == "three":  # volume knob: three fingers up, move hand up/down
+            y = lm[9][1]
+            if self.prev_y is not None:
+                self.acc += (self.prev_y - y) * t.get("volume_speed", 120)
+                if abs(self.acc) >= 1 and now - self.last_vol > 0.12:
+                    n = int(self.acc)
+                    self.ctl.volume_step(n)
+                    self.acc -= n
+                    self.last_vol = now
             self.prev_y = y
         elif cur == "palm":
             self.hist.append((now, lm[0][0]))

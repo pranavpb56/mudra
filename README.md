@@ -1,4 +1,4 @@
-# Mudra 🤌
+# Mudra 
 
 **Control your System with your hands and your voice. Offline. Open source. Extensible.**
 

@@ -1,8 +1,9 @@
+import sys
 import tomllib
 from pathlib import Path
 
 HOME = Path.home() / ".mudra"
-DEFAULT = Path(__file__).with_name("default.toml")
+DEFAULT = Path(__file__).with_name("default_win.toml" if sys.platform.startswith("win") else "default.toml")
 
 
 def _merge(base: dict, extra: dict) -> dict:

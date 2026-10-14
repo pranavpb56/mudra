@@ -12,7 +12,7 @@ requires-python = ">=3.11,<3.13"
 dependencies = [
   "mediapipe==0.10.21",   # also brings opencv (cv2) and numpy<2
   "pynput>=1.7.6",
-  "pyobjc-framework-Quartz",
+  "pyobjc-framework-Quartz; sys_platform == 'darwin'",
   "faster-whisper>=1.0.0",
   "sounddevice>=0.4.6",
 ]
@@ -27,4 +27,4 @@ mudra = "mudra.__main__:main"
 packages = ["mudra"]
 
 [tool.setuptools.package-data]
-mudra = ["default.toml"]
+mudra = ["default.toml", "default_win.toml"]

@@ -1,0 +1,75 @@
+# Mudra default config for Windows (experimental). Edit: notepad %USERPROFILE%\.mudra\mudra.toml
+
+[camera]
+index = 0
+width = 640
+height = 480
+
+[tracking]
+anchor = 5
+frame_margin = 0.18
+smoothing = 0.35
+scroll_speed = 20      # Windows scrolls in bigger steps; raise or lower to taste
+swipe_distance = 0.30
+swipe_window = 0.45
+swipe_cooldown = 1.0
+pinch_on = 0.30
+pinch_off = 0.45
+stable_frames = 3
+shaka_hold = 0.6
+
+[voice]
+enabled = true
+always_on = true       # listen all the time; say "<wake_word> <command>" (shaka still works)
+wake_word = "jarvis"   # one word Whisper recognises well; change to anything
+mic_threshold = 0.015  # raise if it triggers on noise, lower if it ignores your voice
+model = "base.en"      # tiny.en = fastest, small.en = most accurate
+record_seconds = 4
+
+# Gesture -> action. Actions: key:, app:, url:, shell:, say:, scroll:
+[gestures]
+swipe_left = "key:ctrl+win+left"
+swipe_right = "key:ctrl+win+right"
+
+# Spoken phrase -> action. "open <app name>" and "search <query>" work out of the box.
+[voice_commands]
+"screenshot" = "key:win+shift+s"
+"switch app" = "key:alt+tab"
+"close window" = "key:alt+f4"
+"new tab" = "key:ctrl+t"
+"close tab" = "key:ctrl+w"
+"next tab" = "key:ctrl+tab"
+"previous tab" = "key:ctrl+shift+tab"
+"refresh" = "key:f5"
+"go back" = "key:alt+left"
+"go forward" = "key:alt+right"
+"zoom in" = "key:ctrl+="
+"zoom out" = "key:ctrl+-"
+"copy" = "key:ctrl+c"
+"paste" = "key:ctrl+v"
+"undo" = "key:ctrl+z"
+"select all" = "key:ctrl+a"
+"save" = "key:ctrl+s"
+"lock screen" = "key:win+l"
+"show desktop" = "key:win+d"
+"scroll down" = "scroll:-5"
+"scroll up" = "scroll:5"
+"mute" = "key:mute"
+"unmute" = "key:mute"
+"volume up" = "key:volumeup*5"
+"volume down" = "key:volumedown*5"
+"pause music" = "key:playpause"
+"play music" = "key:playpause"
+"next song" = "key:nexttrack"
+"previous song" = "key:prevtrack"
+"open notes" = "app:notepad"
+"open calculator" = "app:calc"
+"open chrome" = "app:chrome"
+"open edge" = "app:msedge"
+"open vs code" = "app:code"
+"open explorer" = "shell:explorer"
+"open downloads" = "shell:explorer %USERPROFILE%\\Downloads"
+"open youtube" = "url:https://youtube.com"
+"open github" = "url:https://github.com"
+"open gmail" = "url:https://mail.google.com"
+"say hello" = "say:Hello. Mudra is ready."

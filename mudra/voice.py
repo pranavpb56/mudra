@@ -5,6 +5,8 @@ import subprocess
 import threading
 import time
 
+from .commands import beep
+
 
 def _norm(text):
     return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]", "", text.lower())).strip()
@@ -107,7 +109,7 @@ class Listener:
                 elif not cmd.strip():
                     awaiting_until = time.time() + 6
                     status["text"] = "yes? say a command"
-                    subprocess.Popen(["afplay", "/System/Library/Sounds/Pop.aiff"])
+                    beep("Pop")
                     ignore_until = time.time() + 0.8
                     continue
                 try:

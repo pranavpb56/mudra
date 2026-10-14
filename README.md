@@ -3,13 +3,13 @@
 **Control your Mac with your hands and your voice. Offline. Open source. Extensible.**
 
 <!-- PUT YOUR DEMO GIF HERE. This is the most important line in the repo. -->
-![demo](docs/demo.gif)
+<!-- add a demo GIF later: ![demo](docs/demo.gif) -->
 
 Move the cursor by pointing. Click and drag with an OK-sign pinch. Scroll with two fingers. Swipe your palm to switch desktops. Hold a shaka 🤙 and just say what you want: *"open notes"*, *"screenshot"*, *"search Hyderabad weather"*.
 
 No cloud. No account. Your webcam frames and your voice never leave your laptop.
 
-## Install (Apple Silicon Mac)
+## Install (macOS, Apple Silicon)
 
 ```bash
 git clone https://github.com/pranavpb56/mudra && cd mudra
@@ -19,6 +19,24 @@ source .venv/bin/activate && mudra
 
 Give your terminal **Camera**, **Microphone** and **Accessibility** access when macOS asks.
 For desktop swiping, enable *Mission Control → Move left/right a space* in Keyboard Shortcuts.
+
+## Install (Windows, experimental)
+
+> Windows support is new and has had less testing than macOS. If something misbehaves, please open an issue.
+
+1. Install **Python 3.12** from https://www.python.org/downloads/ (tick **Add python.exe to PATH**).
+2. In PowerShell:
+
+```powershell
+git clone https://github.com/pranavpb56/mudra
+cd mudra
+powershell -ExecutionPolicy Bypass -File setup.ps1
+.\.venv\Scripts\mudra.exe
+```
+
+3. Allow camera and microphone: *Settings > Privacy & security > Camera / Microphone > Let desktop apps access = On*.
+
+Desktop swipe uses `Win+Ctrl+Left/Right`. Edit your config with `notepad %USERPROFILE%\.mudra\mudra.toml`.
 
 ## Gestures
 
@@ -71,7 +89,8 @@ See [`examples/plugins/`](examples/plugins). Built a cool one? Open a PR.
 
 - [ ] Two-hand gestures (zoom, rotate)
 - [ ] Right-click and middle-click gestures
-- [ ] Windows and Linux backends (`commands.Controller` is the only OS-specific file)
+- [x] Windows backend (experimental, needs testers)
+- [ ] Linux backend (`commands.py` is the only OS-specific file)
 - [ ] Native menu-bar app
 - [ ] Faster voice with `mlx-whisper`
 - [ ] Gesture recorder: teach Mudra your own gestures

@@ -5,15 +5,11 @@ import threading
 import time
 
 from . import config
-from .commands import Controller, build_phrases, match_voice, run_action
+from .commands import Controller, beep, build_phrases, match_voice, run_action
 from .engine import Engine
 from .plugins import API, load_plugins
 
 HELP = "point=move  OK-sign=click/drag  peace=scroll  palm swipe=desktop  shaka=voice  fist=pause"
-
-
-def beep(name):
-    subprocess.Popen(["afplay", f"/System/Library/Sounds/{name}.aiff"])
 
 
 class VoiceProcess:
@@ -80,12 +76,13 @@ def run(cfg, preview=True, voice=True, camera=None):
             vp.listen()
 
     cam = cfg["camera"]
-    cap = cv2.VideoCapture(cam["index"] if camera is None else camera)
+    idx = cam["index"] if camera is None else camera
+    cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW) if sys.platform.startswith("win") else cv2.VideoCapture(idx)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, cam["width"])
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam["height"])
     if not cap.isOpened():
-        raise SystemExit("Could not open the camera. Grant Camera access to your terminal in "
-                         "System Settings > Privacy & Security > Camera.")
+        raise SystemExit("Could not open the camera. Check camera permissions (macOS: System Settings > "
+                         "Privacy & Security > Camera; Windows: Settings > Privacy & security > Camera).")
 
     hands = mp.solutions.hands.Hands(max_num_hands=1, model_complexity=0,
                                      min_detection_confidence=0.7, min_tracking_confidence=0.6)

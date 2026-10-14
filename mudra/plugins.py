@@ -22,7 +22,8 @@ class API:
         return deco
 
     def say(self, text):
-        subprocess.Popen(["say", text])
+        from .commands import say
+        say(text)
 
     def fire_gesture(self, name):
         for fn in self.gesture_handlers.get(name, []):

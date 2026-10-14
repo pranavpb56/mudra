@@ -5,7 +5,7 @@
 <!-- PUT YOUR DEMO GIF HERE. This is the most important line in the repo. -->
 <!-- add a demo GIF later: ![demo](docs/demo.gif) -->
 
-Move the cursor by pointing. Click and drag with an OK-sign pinch. Scroll with two fingers. Swipe your palm to switch desktops. Hold a shaka 🤙 and just say what you want: *"open notes"*, *"screenshot"*, *"search Hyderabad weather"*.
+Move the cursor by pointing. Click and drag with an OK-sign pinch. Scroll with two fingers. Swipe your palm to switch desktops. Just say **"Computer, open notes"**, **"Computer, screenshot"** or **"Computer, search Hyderabad weather"**. Or type with your voice: **"Computer, start dictation"**.
 
 No cloud. No account. Your webcam frames and your voice never leave your laptop.
 
@@ -52,7 +52,14 @@ Desktop swipe uses `Win+Ctrl+Left/Right`. Edit your config with `notepad %USERPR
 
 ## Voice
 
-Runs fully offline with Whisper. Built-ins: `open <any app>`, `search <anything>`, `screenshot`, `scroll down`, `volume up`, `mute`, `new tab`, `lock screen` … and you add your own in config.
+Runs fully offline with Whisper. Two ways to talk to it:
+
+- **Always on:** say the wake word, then your command: **"Computer, open notes"**, **"Computer, search hyderabad weather"**, **"Computer, volume down"**.
+- **Push-to-talk:** hold the shaka 🤙 for about a second, wait for the pop sound, then speak.
+
+Built-ins: `open <any app>`, `search <anything>`, `screenshot`, `scroll down`, `volume up`, `mute`, `new tab`, `lock screen` … and you add your own in the config.
+
+Change `wake_word` and `always_on` in `~/.mudra/mudra.toml`. Audio is processed on your machine and never leaves it.
 
 ## More than gestures
 
@@ -99,6 +106,7 @@ See [`examples/plugins/`](examples/plugins). Built a cool one? Open a PR.
 - **Gestures misfire** → hold your hand 40–70 cm from the camera, palm facing it.
 - **Nothing moves** → check Accessibility permission for your terminal app.
 - **Voice slow** → set `model = "tiny.en"` in config.
+- **Wake word not recognized** → set `wake_word` in the config to another single, common English word.
 
 ## Roadmap / good first issues
 
@@ -110,7 +118,8 @@ See [`examples/plugins/`](examples/plugins). Built a cool one? Open a PR.
 - [ ] Faster voice with `mlx-whisper`
 - [ ] Gesture recorder: teach Mudra your own gestures
 - [ ] Multilingual voice (Telugu, Hindi, Tamil…)
-- [ ] Presentation mode, gaming profiles, accessibility profiles
+- [x] Presentation and media modes
+- [ ] Gaming and accessibility profiles
 
 ## Develop
 
@@ -123,11 +132,3 @@ pip install -e ".[dev]" && pytest
 ## License
 
 MIT
-
-## Always-on voice
-
-Mudra can listen all the time. Say the wake word, then your command:
-
-> **"Computer, open notes"** · **"Computer, search hyderabad weather"** · **"Computer, volume down"**
-
-Change `wake_word`, `always_on` and `mic_threshold` in `~/.mudra/mudra.toml`. Everything runs offline on your Mac, and audio never leaves your machine. The shaka 🤙 gesture still works as push-to-talk.

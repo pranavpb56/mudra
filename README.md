@@ -1,6 +1,6 @@
 # Mudra 🤌
 
-**Control your Mac with your hands and your voice. Offline. Open source. Extensible.**
+**Control your System with your hands and your voice. Offline. Open source. Extensible.**
 
 <!-- PUT YOUR DEMO GIF HERE. This is the most important line in the repo. -->
 <!-- add a demo GIF later: ![demo](docs/demo.gif) -->
